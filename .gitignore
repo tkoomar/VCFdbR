@@ -1,3 +1,12 @@
+# The Wiki
+VCFdbR.wiki/
+
+# VCFs
+*.vcf
+*.vcf.gz* 
+*.fa
+*.fa.gz*
+
 # History files
 .Rhistory
 .Rapp.history
