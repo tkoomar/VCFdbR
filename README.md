@@ -70,7 +70,7 @@ VCFdbR takes data in the difficult-to-parse and search [Variant Call File](https
 For example, a variant specified like this in a VCF:
 ```{text}
 #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  HG00096 HG00097 HG00099
-22      16120773        rs577167963     G       A       100     PASS    AC=1;AF=0.000199681;AN=5008;NS=2504;DP=20455;EAS_AF=0;AMR_AF=0;AFR_AF=0;EUR_AF=0.001;SAS_AF=0;AA=G|||;VT=SNP;CSQ=A|upstream_gene_variant|MODIFIER|LA16c-60H5.7|ENSG00000215270|Transcript|ENST00000398242|processed_pseudogene||||||||||rs577167963|1|1947|1||SNV|Clone_based_vega_gene||YES|||||||||Ensembl|G|G|||||||0.0002|0|0|0|0.001|0|||0.001|MODIFIER|NBEAP3|ENSG00000223875|Transcript|ENST00000420638|unprocessed_pseudogene||1/3|ENST00000420638.1:n.233-1860C>T|YES|||||||||Ensembl|G|G|||||||0.0002|0|0|0|0.001|0|||0.001|EUR||||||||      GT      0|0     0|0      0|0
+22      16120773        rs577167963     G       A       100     PASS    AC=1;AF=0.000199681;AN=5008;NS=2504;DP=20455;EAS_AF=0;AMR_AF=0;AFR_AF=0;EUR_AF=0.001;SAS_AF=0;AA=G|||;VT=SNP;CSQ=A|upstream_gene_variant|MODIFIER|LA16c-60H5.7|ENSG00000215270|Transcript|ENST00000398242|processed_pseudogene||||||||||rs577167963|1|1947|1||SNV|Clone_based_vega_gene||YES|||||||||Ensembl|G|G|||||||0.0002|0|0|0|0.001|0|||0.001|MODIFIER|NBEAP3|ENSG00000223875|Transcript|ENST00000420638|unprocessed_pseudogene||1/3|ENST00000420638.1:n.233-1860C>T|YES|||||||||Ensembl|G|G|||||||0.0002|0|0|0|0.001|0|||0.001|EUR||||||||      GT      0|0     1|0      1|1
 ```
 
 Would have its information divided among three tables in the resulting SQLite database, all of which would be linked by an indexed variant number.
@@ -94,5 +94,5 @@ Finally, the genotypes themselves would be located on the `varint_geno` table, w
 |**variant_id**| sample| gt| gt_raw|
 |---|---|---|---|
 |**843**| HG00096 | 0  |  0\|0|
-|**843**| HG00097 | 0\|0|
-|**843**| HG00099|0\|0|
+|**843**| HG00097 |1 | 1\|0|
+|**843**| HG00099| 2 | 1\|1|
