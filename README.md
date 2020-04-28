@@ -65,7 +65,7 @@ $ tabix [OUTPUT VCF]
 
 ## So what exactly does VCFdbR do?
 
-VCFdbR takes data in the difficult-to-parse and search [Variant Call File](https://samtools.github.io/hts-specs/VCFv4.2.pdf) format and converts it to a SQLite database that can be indexed, allowing for rapid searching. This makes exploratory analyis significnatly faster and removes the need to read the entire VCF into memory at once. This design was inspired by the fantastic [GEMINI](https://gemini.readthedocs.io/en/latest/), but has some critical changes to allow for processing very large cohorts and remvoes a lot of overhead by not providing its own bespoke interface to the dattabase. 
+VCFdbR takes data in the difficult-to-parse and search [Variant Call File](https://samtools.github.io/hts-specs/VCFv4.2.pdf) format and converts it to a SQLite database that can be indexed, allowing for rapid searching. This makes exploratory analyis significnatly faster and removes the need to read the entire VCF into memory at once. This design was inspired by the fantastic [GEMINI](https://gemini.readthedocs.io/en/latest/), but has some critical changes to allow for processing very large cohorts and remvoes a lot of overhead by not providing its own bespoke interface to the database. 
 
 For example, a variant specified like this in a VCF:
 ```{text}
@@ -75,7 +75,7 @@ For example, a variant specified like this in a VCF:
 
 Would have its information divided among three tables in the resulting SQLite database, all of which would be linked by an indexed variant number.
 
-Information from the core variant information and `INFO` column would be located on the `variant_info` table, where each varaint exists exaclty once:
+Information from the core variant information and `INFO` column would be located on the `variant_info` table, where each varaint exists exactly once:
 
 |**variant_id**|chr|start|end|ref|alt|qual|filter|ac|af|ns|an|eas_af|eur_af|afr_af|amr_af|sas_af|dp|vt|
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
