@@ -127,7 +127,7 @@ keep_geno_col <- sapply(geno_col_names, function(col_name){
     return(FALSE)
     }
   
-  col_class <- class(geno(tmp.vcf)[[col_name]][1,1])
+  col_class <- type(geno(tmp.vcf)[[col_name]])
   
   if(!(col_class %in% c("character", "integer", "numeric"))){
     warning("geno column '", col_name, "'is of upsupported type '", col_class, ". It will be skipped.")
