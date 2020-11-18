@@ -1,6 +1,8 @@
 # The Wiki
 VCFdbR.wiki/
 
+toy-data/*/
+
 # VCFs
 *.vcf
 *.vcf.gz* 
