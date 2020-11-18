@@ -31,7 +31,6 @@ while(length(args > 0) ){
     threads <- args[2]
     args <- args[-1:-2]
     message("Writing genotypes in parallel (requires furrr package)")
-    require(furrr)
   } else {
     stop("Unknown argument: ", args[1])
   }
@@ -176,6 +175,8 @@ exonic_impacts = c("stop_gained",
 rm(tmp.vcf)
 
 if(run_parallel){
+  require(furrr)
+  options(future.globals.maxSize= 10000*1024^2)
   plan(multiprocess)
   options(mc.cores = threads)
 }
@@ -185,7 +186,10 @@ if(run_parallel){
 message("######\nSTARTING TO BUILD DATABASE\n######")
 date()
 p <- length(chunk_ranges)
+options(progress_enabled = TRUE)
 pb <- progress_bar$new(total = p, 
+                       clear = FALSE, 
+                       force = TRUE,
                        format = ":current/:total chunks completed in :elapsed; eta: :eta"
                        )
 index_start <- 0
@@ -286,9 +290,6 @@ for(i in 1:p){
                gt = gt2snp(gt_raw))
     }
     
-    geno.vcf <- geno.vcf %>%
-    filter(!is.na(variant_id)) %>%
-      arrange(variant_id, sample)
     
     if(file_mode){
       ## add path to genos to info table
@@ -314,7 +315,8 @@ for(i in 1:p){
     } else {
       ## write geno to SQLite
       geno.vcf <- geno.vcf %>%
-        select(-group)
+        select(-group) %>%
+        arrange(variant_id, sample)
       con <- dbConnect(SQLite(), db_name)
       db_insert_into(con = con, 
                      table = "variant_geno", 
