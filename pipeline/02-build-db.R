@@ -31,6 +31,10 @@ while(length(args > 0) ){
     threads <- args[2]
     args <- args[-1:-2]
     message("Writing genotypes in parallel (requires furrr package)")
+  } else if(args[1] == "--allow-list-col"){
+    allow_list_col <- TRUE
+    args <- args[-1]
+    message("Splitting and keeping list columns")
   } else {
     stop("Unknown argument: ", args[1])
   }
@@ -110,11 +114,11 @@ dbDisconnect(con)
 
 #### Check that the geno fields exists ####
 message('######\nCHECKING GENOTYPE FIELDS\n')
-tmp.vcf <- readVcf(vcf_name, param = chunk_ranges[1])
+tmp.vcf <- readVcf(file = VcfFile(vcf_name), param = chunk_ranges[1])
 
 geno_col_names <- geno(tmp.vcf) %>% names()
 
-## Check to make sure the geno fields declaierd in the header are actually on the data
+## Check to make sure the geno fields declared in the header are actually on the data
 ## Also check that they are of a supported type (SQLite can't handle list columns)
 keep_geno_col <- sapply(geno_col_names, function(col_name){
   all_missing <- geno(tmp.vcf)[[col_name]] %>%
@@ -129,18 +133,27 @@ keep_geno_col <- sapply(geno_col_names, function(col_name){
   
   col_class <- class(geno(tmp.vcf)[[col_name]][1,1])
   
-  if(!(col_class %in% c("character", "integer", "numeric"))){
-    warning("geno column '", col_name, "'is of upsupported type '", col_class, ". It will be skipped.")
+  if(allow_list_col & col_class == "list"){
+    list_lengths <- geno(tmp.vcf)[[col_name]] %>% 
+      map_int(length) %>%
+      unique()
+    if(length(list_lengths) != 1){
+      warning("geno column '", col_name, "' is a list with variable lengths ", list_lengths, ". It will be skipped.")
+      return(FALSE)
+    } else{
+      message("geno column '", col_name, "' is a list with an apparent fixed length of ", list_lengths, ". It will be kept.")
+      return(TRUE)
+    }
+  } else if(!(col_class %in% c("character", "integer", "numeric"))){
+    warning("geno column '", col_name, "' is of upsupported type ", col_class, ". It will be skipped.")
     return(FALSE)
   }
-  
   return(TRUE)
 })
 
 geno_col_names <- geno_col_names[keep_geno_col]
 
 message("######\n")
-
 
 #### Check to see if CSQ exists ####
 if(class(tmp.vcf@info$CSQ)!="NULL"){
@@ -282,6 +295,19 @@ for(i in 1:p){
             select(-sample) 
         )
     }
+    
+    ## handle list columns
+    if(allow_list_col){
+      list_cols <- geno.vcf %>%
+        select(where(is.list)) %>%
+        colnames()
+      
+      for(col in list_cols){
+        geno.vcf <- geno.vcf %>%
+          unnest_wider(col = col, names_sep = "_")
+      }
+    }
+
     names(geno.vcf) %<>% tolower()
     
     if('GT' %in% geno_col_names){
