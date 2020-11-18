@@ -50,10 +50,11 @@ If you are unfamiliar with executing R scripts from the command line via `Rscrip
 
 Finally, you need a ([bgzipped and tabix indexed](https://davetang.org/muse/2013/02/22/using-tabix/)) VCF to convert! 
 
-**This VCF needs to have all multialleleic sites split.** You can do that with `bcftools`:
+**This VCF needs to have all multialleleic sites split.** All fields which once had one value per alternate allele (`Number=A`) also need to be converted to a single value (`Number=1`). You can do that with `bcftools`:
 
 ```
-$ bcftools norm -m - -O z -o [OUTPUT VCF] [YOUR VCF]
+$ bcftools norm -c ws -f [REF GENOME FASTA] -m - [YOUR VCF] | sed -e 's/Number=A/Number=1/g' | bgzip -c > [OUTPUT VCF]
+$ tabix [OUTPUT VCF]
 ```
 
 Also, if your VCF has been annotated with VEP, you might need to do a little munging in order for the CSQ column to be parsed correctly. This can be done as part of the VEP run, or afterwords, using `sed`:
