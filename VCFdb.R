@@ -16,7 +16,7 @@ Required Arguments:
 --prefix [character] 
     Will be the name of the database and other 
     files produced bt the pipeline. 
---vcf_name [character]
+--vcf [character]
     The name of the input VCF. Should not have
     multialleleic sites. If VEP annotatios are
     present, should be named the default 'CSQ'
