@@ -276,6 +276,7 @@ for(i in 1:p){
       gather(sample, !!.geno_col, -variant_id, -group)
     
     for(.geno_col in geno_col_names[-1]){
+      message(.geno_col) ## debug
       geno_col <- enquo(.geno_col)
       geno.vcf <- geno.vcf %>%
         bind_cols(
