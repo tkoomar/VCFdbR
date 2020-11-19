@@ -127,9 +127,15 @@ keep_geno_col <- sapply(geno_col_names, function(col_name){
     return(FALSE)
     }
   
-  col_class <- type(geno(tmp.vcf)[[col_name]])
+  col_class <- class(geno(tmp.vcf)[[col_name]])
+  col_type <- type(geno(tmp.vcf)[[col_name]])
   
-  if(!(col_class %in% c("character", "integer", "numeric", "double"))){
+  if(col_class == "array"){
+    message("geno column '", col_name, "' has multiple values per variant (", dim(geno(tmp.vcf)[[col_name]])[3], "). The package `reshape2` is required to parse.")
+    require(reshape2)
+  }
+  
+  if(!(col_type %in% c("character", "integer", "numeric", "double"))){
     warning("geno column '", col_name, "'is of upsupported type '", col_class, ". It will be skipped.")
     return(FALSE)
   }
@@ -283,13 +289,30 @@ for(i in 1:p){
     for(.geno_col in geno_col_names[-1]){
       message(.geno_col) ## debug
       geno_col <- enquo(.geno_col)
-      geno.vcf <- geno.vcf %>%
-        bind_cols(
-          geno(.vcf)[[.geno_col]] %>% 
-            as_tibble() %>%
-            gather(sample, !!.geno_col) %>%
-            select(-sample) 
-        )
+      
+      if (class(geno(.vcf)[[.geno_col]]) == "matrix"){
+        geno.vcf <- geno.vcf %>%
+          bind_cols(
+            geno(.vcf)[[.geno_col]] %>% 
+              as_tibble() %>%
+              gather(sample, !!.geno_col) %>%
+              select(-sample) 
+          )
+      } else if (class(geno(.vcf)[[.geno_col]]) == "array"){
+        tmp <- geno(.vcf)[[.geno_col]] 
+        rownames(tmp) <- var_ind
+        tmp <- tmp %>%
+          reshape2::melt() %>%
+          select(variant_id = Var1, 
+                 sample = Var2, 
+                 Var3, 
+                 value) %>%
+          mutate(Var3 = str_c(.geno_col, "_", Var3)) %>%
+          spread(Var3, value)
+  
+        geno.vcf <- geno.vcf %>%
+          left_join(tmp, by = c("variant_id", "sample"))
+      }
     }
     names(geno.vcf) %<>% tolower()
     
