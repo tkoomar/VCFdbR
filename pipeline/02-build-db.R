@@ -252,7 +252,7 @@ for(i in 1:p){
                   as_tibble() %>% 
                   select(seqnames, start, end) %>% 
                   rename('chr' = seqnames)) %>%
-      bind_cols(.vcf@fixed %>% as_tibble(), ) %>%
+      bind_cols(.vcf@fixed %>% as_tibble()) %>%
       bind_cols(.vcf@info %>% as_tibble()) 
   }
   
@@ -262,11 +262,16 @@ for(i in 1:p){
   
   ## fix a few weird formatting things on the columns
   ## then add filepaths for variants
+  
+  message("fixing 'AsIs' INFO columns") ## debug
+  
   info.vcf <- info.vcf %>%
     mutate(alt = sapply(alt, as.character)) %>%
     mutate_if(function(x){class(x)=="AsIs"}, as.character) 
   
+   message("done parsing info") ## debug
   ## genotypes have to be combined to go into the genotype table
+   
   if (length(geno_col_names) > 0){
     
     .geno_col <- geno_col_names[1]
@@ -276,6 +281,7 @@ for(i in 1:p){
       gather(sample, !!.geno_col, -variant_id, -group)
     
     for(.geno_col in geno_col_names[-1]){
+      message(.geno_col) ## debug
       geno_col <- enquo(.geno_col)
       geno.vcf <- geno.vcf %>%
         bind_cols(
@@ -293,6 +299,7 @@ for(i in 1:p){
                gt = gt2snp(gt_raw))
     }
     
+    message("done paring GENO") ## debug
     
     if(file_mode){
       ## add path to genos to info table
@@ -339,6 +346,8 @@ for(i in 1:p){
                  table = "variant_info",
                  info.vcf)
   dbDisconnect(con)
+  
+  message("Done writing/insering variants") ## debug
 }
 ## end loop
 message("######\nDone inserting variants\n#####")
