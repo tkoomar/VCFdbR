@@ -129,7 +129,7 @@ keep_geno_col <- sapply(geno_col_names, function(col_name){
   
   col_class <- type(geno(tmp.vcf)[[col_name]])
   
-  if(!(col_class %in% c("character", "integer", "numeric"))){
+  if(!(col_class %in% c("character", "integer", "numeric", "double"))){
     warning("geno column '", col_name, "'is of upsupported type '", col_class, ". It will be skipped.")
     return(FALSE)
   }
@@ -248,8 +248,11 @@ for(i in 1:p){
     
   } else{
     info.vcf <- tibble(variant_id = var_ind) %>%
-      bind_cols(.vcf@rowRanges %>% as_tibble () %>% select(seqnames, start, end) %>% rename('chr' = seqnames)) %>%
-      bind_cols(.vcf@fixed %>% as_tibble()) %>%
+      bind_cols(.vcf@rowRanges %>% 
+                  as_tibble() %>% 
+                  select(seqnames, start, end) %>% 
+                  rename('chr' = seqnames)) %>%
+      bind_cols(.vcf@fixed %>% as_tibble(), ) %>%
       bind_cols(.vcf@info %>% as_tibble()) 
   }
   
