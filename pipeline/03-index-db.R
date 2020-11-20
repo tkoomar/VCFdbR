@@ -86,7 +86,7 @@ if ('variant_impact' %in% DBI::dbListTables(con)){
   var_imp <- tbl(con, 'variant_impact')
   
   gene_dat <- var_imp %>% 
-    select(c('symbol', 'symbol_source', 'gene', 'source', 'feature', 'canonical', 'ensp', 'ccds', 'motif_name', 'feature_type')) %>% 
+    select(any_of(c('symbol', 'symbol_source', 'gene', 'source', 'feature', 'canonical', 'ensp', 'ccds', 'motif_name', 'feature_type'))) %>% 
     collect() %>% 
     distinct() 
   
