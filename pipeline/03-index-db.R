@@ -26,7 +26,9 @@ require(VariantAnnotation)
 require(dbplyr)
 require(tidyverse)
 require(magrittr)
+require(DBI)
 require(RSQLite)
+
 
 ## build indicies
 message("######\nBUILDING INDICIES\n######")
@@ -92,11 +94,10 @@ if ('variant_impact' %in% DBI::dbListTables(con)){
   
   gene_dat[gene_dat == ""] <- NA
   
-  db_insert_into(con = con, 
-                 table = "gene_map", 
-                 gene_dat)
-  
-  dbDisconnect(con)
+  DBI::dbWriteTable(
+    conn = con,
+    name = "gene_map", 
+    value = gene_dat)
 }
-
+dbDisconnect(con)
 message("######\nVCFdb creation ended on\n", date(), "\n######")
