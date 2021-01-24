@@ -22,11 +22,13 @@ if(!exists("db_name")){
   stop("A database must be passed with the `--db` argument")
 }
 
-require(VariantAnnotation)
-require(dbplyr)
-require(tidyverse)
-require(magrittr)
-require(RSQLite)
+suppressPackageStartupMessages(require(VariantAnnotation))
+suppressPackageStartupMessages(require(dbplyr))
+suppressPackageStartupMessages(require(tidyverse))
+suppressPackageStartupMessages(require(magrittr))
+suppressPackageStartupMessages(require(DBI))
+suppressPackageStartupMessages(require(RSQLite))
+
 
 ## build indicies
 message("######\nBUILDING INDICIES\n######")
@@ -86,17 +88,16 @@ if ('variant_impact' %in% DBI::dbListTables(con)){
   var_imp <- tbl(con, 'variant_impact')
   
   gene_dat <- var_imp %>% 
-    select(symbol, symbol_source, gene, source, feature, canonical, ensp, ccds, motif_name, feature_type) %>% 
+    select(any_of(c('symbol', 'symbol_source', 'gene', 'source', 'feature', 'canonical', 'ensp', 'ccds', 'motif_name', 'feature_type'))) %>% 
     collect() %>% 
     distinct() 
   
   gene_dat[gene_dat == ""] <- NA
   
-  db_insert_into(con = con, 
-                 table = "gene_map", 
-                 gene_dat)
-  
-  dbDisconnect(con)
+  DBI::dbWriteTable(
+    conn = con,
+    name = "gene_map", 
+    value = gene_dat)
 }
-
+dbDisconnect(con)
 message("######\nVCFdb creation ended on\n", date(), "\n######")

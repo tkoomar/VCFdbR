@@ -15,7 +15,7 @@ the 'pipeline/' directory.
 Required Arguments:
 --prefix [character] 
     Will be the name of the database and other 
-    files produced bt the pipeline. 
+    files produced by the pipeline. 
 --vcf [character]
     The name of the input VCF. Should not have
     multialleleic sites. If VEP annotatios are
@@ -46,8 +46,15 @@ Optional Arguments:
     what is available on your machine. 
     Anecdotal testing finds the optimal number
     to be between 2 and 10, depending on many
-    factors.
-    Requires the `furrr` package.")
+    factors. Requires the `furrr` package.
+--include-multivalue-gt 
+    Include GT fields which have multiple values
+    for each sample. Can be slow for VCFs with
+    many samples, due to the way such fields are
+    handeld by VariantAnnotation::readVcf(). If 
+    preserving these fields is important, it may
+    be worth first separating them in the input 
+    VCF.")
     stop()
   } else if(args[1] == '--mode'){
     if(args[2] == 'file'){
@@ -67,6 +74,10 @@ Optional Arguments:
   } else if(args[1] == "--chunk-size"){
     chunk_size <- args[2]
     args <- args[-1:-2]
+  } else if(args[1] == "--include-multivalue-gt"){
+    multi_gt <- TRUE
+    args <- args[-1]
+    message("Including GENO Fields with multiple values (may be slow for many samples)")
   } else if(args[1] == "--threads"){
     run_parallel <- TRUE
     threads <- args[2]
