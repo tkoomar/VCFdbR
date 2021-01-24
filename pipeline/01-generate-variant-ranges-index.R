@@ -27,8 +27,8 @@ if(!exists("vcf_name")){
   stop("A vcf must be passed with the `--vcf` argument")
 }
 
-require(VariantAnnotation)
-require(tidyverse)
+suppressPackageStartupMessages(require(VariantAnnotation))
+suppressPackageStartupMessages(require(tidyverse))
 
 #### Generate Chunks of Variants ####
 message('######\nLOADING RANGES\n######')

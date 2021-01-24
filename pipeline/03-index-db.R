@@ -22,12 +22,12 @@ if(!exists("db_name")){
   stop("A database must be passed with the `--db` argument")
 }
 
-require(VariantAnnotation)
-require(dbplyr)
-require(tidyverse)
-require(magrittr)
-require(DBI)
-require(RSQLite)
+suppressPackageStartupMessages(require(VariantAnnotation))
+suppressPackageStartupMessages(require(dbplyr))
+suppressPackageStartupMessages(require(tidyverse))
+suppressPackageStartupMessages(require(magrittr))
+suppressPackageStartupMessages(require(DBI))
+suppressPackageStartupMessages(require(RSQLite))
 
 
 ## build indicies
