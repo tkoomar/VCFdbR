@@ -30,6 +30,7 @@ if(!exists("vcf_name")){
 suppressPackageStartupMessages(require(VariantAnnotation))
 suppressPackageStartupMessages(require(tidyverse))
 
+if(!file.exists(paste0(prefix, ".progress.RData"))){
 #### Generate Chunks of Variants ####
 message('######\nLOADING RANGES\n######')
 
@@ -87,3 +88,4 @@ gc()
 message('######\nDONE IDENTIFYING CHUNKS\nRANGES ARE WRITTEN TO:\n', 
         paste0(prefix, "-chunk-ranges.rds"),
         '\n######')
+}
