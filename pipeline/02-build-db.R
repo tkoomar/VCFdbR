@@ -518,11 +518,15 @@ for(i in seq(chunk_start,p)){
   
   chunk_start <- i
   index_start <- last(var_ind)
-  save(index_start, chunk_start, csq_exists, csq_cols, exonic_impacts, geno_col_names, gt2snp, header, keep_geno_col, ranges_name, vcf_header, vcf_name, 
+  save(list = c(
+    'index_start', 'chunk_start', 'exonic_impacts', 'geno_col_names', 'gt2snp', 
+    'header', 'keep_geno_col', 'ranges_name', 'vcf_header', 'vcf_name',
+    if(csq_exists){c('csq_exists', 'csq_cols')}
+  ),
        file = paste0(prefix, ".progress.RData"))
 }
 
-## end loop
+#### end loop ####
 message("######\nDone inserting variants\n#####")
 date()
 closeAllConnections()
