@@ -114,7 +114,7 @@ tmp.vcf <- readVcf(vcf_name, param = chunk_ranges[1])
 
 geno_col_names <- geno(tmp.vcf) %>% names()
 
-## Check to make sure the geno fields declaierd in the header are actually on the data
+## Check to make sure the geno fields declared in the header are actually on the data
 ## Also check that they are of a supported type (SQLite can't handle list columns)
 keep_geno_col <- sapply(geno_col_names, function(col_name){
   all_missing <- geno(tmp.vcf)[[col_name]] %>%
@@ -125,18 +125,22 @@ keep_geno_col <- sapply(geno_col_names, function(col_name){
   if (all_missing){
     warning("geno column '", col_name, "' appears to be missing. It will be skipped.")
     return(FALSE)
-    }
+  }
   
   col_class <- class(geno(tmp.vcf)[[col_name]])
   col_type <- type(geno(tmp.vcf)[[col_name]])
   
-  if(col_class == "array"){
+  
+  if(col_class == "array" & multi_gt){
     message("geno column '", col_name, "' has multiple values per variant (", dim(geno(tmp.vcf)[[col_name]])[3], "). The package `reshape2` is required to parse.")
-    require(reshape2)
+    suppressPackageStartupMessages(require(reshape2))
+  } else if(col_class == "array" & !multi_gt){
+    message("geno column '", col_name, "' has multiple values per variant and will be skipped.")
+    return(FALSE)
   }
   
   if(!(col_type %in% c("character", "integer", "numeric", "double"))){
-    warning("geno column '", col_name, "'is of upsupported type '", col_class, ". It will be skipped.")
+    warning("geno column '", col_name, "'is of upsupported type '", col_type, ". It will be skipped.")
     return(FALSE)
   }
   
@@ -183,7 +187,6 @@ rm(tmp.vcf)
 if(run_parallel){
   require(furrr)
   options(future.globals.maxSize= 10000*1024^2)
-  plan(multiprocess)
   options(mc.cores = threads)
 }
 
@@ -269,13 +272,13 @@ for(i in 1:p){
   ## fix a few weird formatting things on the columns
   ## then add filepaths for variants
   
-  message("fixing 'AsIs' INFO columns") ## debug
+  # message("fixing 'AsIs' INFO columns") ## debug
   
   info.vcf <- info.vcf %>%
     mutate(alt = sapply(alt, as.character)) %>%
     mutate_if(function(x){class(x)=="AsIs"}, as.character) 
   
-   message("done parsing info") ## debug
+   # message("done parsing info") ## debug
   ## genotypes have to be combined to go into the genotype table
    
   if (length(geno_col_names) > 0){
@@ -287,7 +290,7 @@ for(i in 1:p){
       gather(sample, !!.geno_col, -variant_id, -group)
     
     for(.geno_col in geno_col_names[-1]){
-      message(.geno_col) ## debug
+      # message(.geno_col) ## debug
       geno_col <- enquo(.geno_col)
       
       if (class(geno(.vcf)[[.geno_col]]) == "matrix"){
@@ -322,7 +325,7 @@ for(i in 1:p){
                gt = gt2snp(gt_raw))
     }
     
-    message("done paring GENO") ## debug
+    # message("done paring GENO") ## debug
     
     if(file_mode){
       ## add path to genos to info table
@@ -335,10 +338,12 @@ for(i in 1:p){
         nest() 
       
       if(run_parallel){
+        plan(multiprocess)
         tmp <- quietly(future_map2(geno.vcf$data, geno.vcf$group, 
                                    ~write_rds(as.data.frame(.x), str_c(geno_dir, "/", .y, ".rds"))
         )
         )
+        plan(sequential)
       } else{
         tmp <- quietly(map2(geno.vcf$data, geno.vcf$group, 
                             ~write_rds(as.data.frame(.x), str_c(geno_dir, "/", .y, ".rds"))
@@ -359,7 +364,7 @@ for(i in 1:p){
     }
   
   ## Write to database
-  con <- dbConnect(SQLite(), db_name)
+  con <- dbConnect(SQLite(), db_name, synchronous = NULL )
   if(exists('csq.vcf')){
     db_insert_into(con = con, 
                    table = "variant_impact", 
@@ -370,7 +375,12 @@ for(i in 1:p){
                  info.vcf)
   dbDisconnect(con)
   
-  message("Done writing/insering variants") ## debug
+  # message("Done writing/insering variants") ## debug
+  rm(.vcf, info.vcf)
+  if(exists('csq.vcf')){
+    rm(csq.vcf) 
+  }
+  gc(verbose = FALSE)
 }
 ## end loop
 message("######\nDone inserting variants\n#####")
