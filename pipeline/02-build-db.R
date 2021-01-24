@@ -3,6 +3,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 ## defaults ##
 run_parallel <- FALSE
+multi_gt <- FALSE
 
 while(length(args > 0) ){
   if(args[1] == '--mode'){
@@ -26,6 +27,10 @@ while(length(args > 0) ){
     ranges_name <- args[2]
     args <- args[-1:-2]
     message("Input variant chunk ranges: ", ranges_name)
+  } else if(args[1] == "--include-multivalue-gt"){
+    multi_gt <- TRUE
+    args <- args[-1]
+    message("Including GENO Fields with multiple values (may be slow for many samples)")
   } else if(args[1] == "--threads"){
     run_parallel <- TRUE
     threads <- args[2]
