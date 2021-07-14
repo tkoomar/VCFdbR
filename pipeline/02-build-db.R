@@ -2,10 +2,12 @@
 args = commandArgs(trailingOnly=TRUE)
 
 ## defaults ##
-run_parallel <- FALSE
-multi_gt <- FALSE
-end_provided <- FALSE
-debug_mode <- FALSE
+if(!exists("multi_gt")){
+  run_parallel <- FALSE
+  multi_gt <- FALSE
+  end_provided <- FALSE
+  debug_mode <- FALSE
+}
 
 while(length(args > 0) ){
   if(args[1] == '--mode'){

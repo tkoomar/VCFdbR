@@ -3,6 +3,13 @@ args = commandArgs(trailingOnly=TRUE)
 
 file_mode <- NA
 
+## defaults ##
+run_parallel <- FALSE
+multi_gt <- FALSE
+end_provided <- FALSE
+debug_mode <- FALSE
+
+
 while(length(args > 0) ){
   if(args[1] == "--help" | args[1] == "-h" ){
     message(
@@ -78,6 +85,10 @@ Optional Arguments:
     multi_gt <- TRUE
     args <- args[-1]
     message("Including GENO Fields with multiple values (may be slow for many samples)")
+  } else if(args[1] == "--debug"){
+    debug_mode <- TRUE
+    args <- args[-1]
+    message("Debug mode enabled, producing verbose output")
   } else if(args[1] == "--threads"){
     run_parallel <- TRUE
     threads <- args[2]
