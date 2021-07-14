@@ -34,6 +34,7 @@ $ Rscript VCFdb.R --prefix [character] --vcf [character] --mode ['file'|'table']
         * If your hard disk is fast, this has the added benefit of allowing genotypes to be written in parallel, via the `--threads` argument
         * This mode puts a column in the database pointing to the locaiton of the genotype files on the filesystem, this is why _**it is not reccomended to move the File-GT genotype folder after creation.**_ Consider where you build the database carefully. 
             * It is possible, but will require manually altering the paths in the `geno` column of the `variant_impact` table. Plus, moving the thousands or millions of individual genotype files will be exceptionally slow. 
+* It is common for VCFs to have complex FORMAT fields which contain multiple values. The VariantAnnotation package in R does not handle these particularly efficiently, so the default behavior of VCFdbR is to ignore such fields. See the bottom of this readme for more information on this topic. 
 
 ## What do I need to run VCFdbR?
 
@@ -97,3 +98,15 @@ Finally, the genotypes themselves would be located on the `varint_geno` table, w
 |**843**| HG00096 | 0  |  0\|0|
 |**843**| HG00097 |1 | 1\|0|
 |**843**| HG00099| 2 | 1\|1|
+
+## Complex `FORMAT` fields
+
+By default, FORMAT fields with more than 1 value (see below) are excluded from databases, because they are reletively inefficient to parse. 
+```
+##FORMAT=<ID=RD,Number=2,Type=Integer,Description="Reference forward, reverse reads">
+```
+If you want to handle these, there are 3 primary optons: 
+1. If the FORMAT field has a **fixed** number of values (i.e. if it does not have `Number=.`), it can be parsed into multiple columns by passing the `--include-multivalue-gt` argument to `VCFdb.R`. Note that this requres the `reshape2` package, and testing has found it to be exceptionally slow for larger number of samples (100's or more)
+2. If the FORMAT field has a **fixed** number of values, split it apart into multiple FORMAT fields within the VCF (before building the database with VCFdbR). **For VCFs with many samples, this is the best option**. 
+3. If the field does not have a consistent number of values (i.e. if `Number=.`), then the only option is to import that field as a character by altering the VCF header so that `Number=1,Type=String`. This is because SQLite do not have a data type comparable to R's `list()`. Downstream processing of the string will be needed, which means the field will not be suitable for filtering upon until data has been collected into memory from the database. 
+    *   Note that many callers seem to give FORMAT fields `Number=.`, even though there is actually always fixed number. In this case, you may able to just alter the VCF header to correctly specify the number of values that are present in the field (which may even be just 1)
