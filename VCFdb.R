@@ -40,7 +40,7 @@ Required Arguments:
     on the size of individual files. 
 
 Optional Arguments: 
---chunk_size [integer]
+--chunk-size [integer]
     The approximate number of variants to process
     at once. Smaller numbers  use less memory at
     the expense of running slightly slower.
